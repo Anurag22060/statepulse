@@ -3,6 +3,7 @@ package com.statepulse.service;
 import com.statepulse.entity.TransportService;
 import com.statepulse.repository.TransportServiceRepository;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Service
 public class TransportServiceManager {
@@ -15,5 +16,10 @@ public class TransportServiceManager {
 
     public TransportService createTransportService(TransportService transportService) {
         return transportServiceRepository.save(transportService);
+
+    }
+
+    public List<TransportService> getAllTransportServices() {
+        return transportServiceRepository.findAll();
     }
 }
