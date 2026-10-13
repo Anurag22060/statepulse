@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import com.statepulse.entity.TransportService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import com.statepulse.dto.TransportServiceResponse;
 
 import java.util.List;
 
@@ -19,8 +20,21 @@ public class TransportServiceController {
         this.transportServiceManager = transportServiceManager;
     }
 
+    private TransportServiceResponse toResponse(TransportService service) {
+        TransportServiceResponse response = new TransportServiceResponse();
+
+        response.setId(service.getId());
+        response.setServiceCode(service.getServiceCode());
+        response.setName(service.getName());
+        response.setType(service.getType());
+        response.setStatus(service.getStatus());
+        response.setDelayMinutes(service.getDelayMinutes());
+
+        return response;
+    }
+
     @PostMapping("/api/transport-services")
-    public TransportService createTransportService(
+    public TransportServiceResponse createTransportService(
             @Valid @RequestBody TransportServiceRequest request) {
 
         TransportService transportService = new TransportService();
@@ -31,21 +45,31 @@ public class TransportServiceController {
         transportService.setStatus(request.getStatus());
         transportService.setDelayMinutes(request.getDelayMinutes());
 
-        return transportServiceManager.createTransportService(transportService);
+        TransportService savedService =
+                transportServiceManager.createTransportService(transportService);
+
+        return toResponse(savedService);
     }
 
     @GetMapping("/api/transport-services")
-    public List<TransportService> getAllTransportServices() {
-        return transportServiceManager.getAllTransportServices();
+    public List<TransportServiceResponse> getAllTransportServices() {
+        return transportServiceManager.getAllTransportServices()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @GetMapping("/api/transport-services/{id}")
-    public TransportService getTransportServiceById(@PathVariable Long id) {
-        return transportServiceManager.getTransportServiceById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Transport service not found with id " + id
-                ));
+    public TransportServiceResponse getTransportServiceById(
+            @PathVariable Long id) {
+
+        TransportService service =
+                transportServiceManager.getTransportServiceById(id)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Transport service not found with id " + id));
+
+        return toResponse(service);
     }
 
     @PutMapping("/api/transport-services/{id}")
